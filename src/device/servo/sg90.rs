@@ -8,6 +8,7 @@ pub struct sg90 {
     pulse_cycle_ms: u64,
     pulse_width_min: u64,
     pulse_width_max: u64,
+    pub is_moving: bool,
     output_pin: OutputPin
 }
 
@@ -17,6 +18,7 @@ impl sg90 {
             pulse_cycle_ms: 20, // 50HZ
             pulse_width_min: 500,
             pulse_width_max: 2400,
+            is_moving: false,
             output_pin
         }
     }
@@ -29,8 +31,9 @@ impl servo for sg90 {
             Duration::from_micros(self.pulse_width_max),
         ) {
             Ok(_) => {
-                thread::sleep(Duration::from_millis(1000));
+                self.is_moving = true;
                 println!("Finished move_up");
+                self.is_moving = false;
                 Ok(())
             },
             Err(_) => Err(String::from("Error moving servo up"))
@@ -43,8 +46,9 @@ impl servo for sg90 {
             Duration::from_micros(self.pulse_width_min),
         ) {
             Ok(_) => {
-                thread::sleep(Duration::from_millis(1000));
+                self.is_moving = true;
                 println!("Finished move_down");
+                self.is_moving = false;
                 Ok(())
             },
             Err(_) => Err(String::from("Error moving servo down"))
