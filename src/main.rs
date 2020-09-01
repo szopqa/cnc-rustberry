@@ -15,7 +15,9 @@ mod device;
 use device::{
     cnc_plotter_device::CncPlotterDevice,
     servo::{servo::Servo, sg90::Sg90},
+    moveables::{moveable::Moveable, pc_mouse::PcMouseMoveable}
 };
+
 
 struct DrawablePlatform {
     x_pos: i32,
@@ -83,42 +85,36 @@ impl DrawablePlatform {
 const GPIO_PWM: u8 = 23;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    // let g_code = File::open("plot.g")?;
+    let _g_code = File::open(String::from("plot.g"))?;
+    let _g_code: BufReader<File> = BufReader::new(_g_code);
+    
+    let mut parser = Parser::new(_g_code);
+    let _ = parser.parse();
 
-    // let g_code = BufReader::new(g_code);
-    // for line in g_code.lines() {
-    //     println!("{}", line.unwrap());
-    // }
+    let mut pc_mouse = PcMouseMoveable::new(200, 200);
+    pc_mouse.calibrate();
 
-    // let mut g_code_parser = Parser::new(
-    //     r"
-    //     G90 N1
-    //     G
-    //     G01 X50 $$%# Y20
-    // "
-    //     .to_string(),
-    // );
+    pc_mouse.move_down();
+    let destinations: Vec<(isize, isize)> = vec![
+        (200, 600),
+        (600, 200),
+        (600, 600),
+        (200, 200),
+    ];
 
-    // let commands = g_code_parser.parse();
+    for _offset in 0..100 {
+        for _each_dest in &destinations {
+            for (x, y) in Bresenham::new(
+                (pc_mouse._current_pos.0 as isize, 
+                 pc_mouse._current_pos.1 as isize),
+                (_each_dest.0 + _offset * 10, _each_dest.1 + _offset * 10),
+            ) {
+                pc_mouse.move_to_relative_pos(x as i32, y as i32)
+            }
+        }
+    }
 
-    // let servo_pwm_pin = Gpio::new()?.get(GPIO_PWM)?.into_output();
-    // let mut servo = Sg90::new(servo_pwm_pin);
-
-    // let mut cnc_plotter = CncPlotterDevice::new(Box::new(servo));
-
-    // cnc_plotter.run();
-    let mut drawable = DrawablePlatform::new(50, 50);
-
-    drawable.draw_line(1, 50);
-    drawable.draw_line(50, 50);
-    drawable.draw_line(50, 1);
-    drawable.draw_line(1, 1);
-    drawable.draw_line(50, 50);
-    drawable.draw_line(50, 1);
-    drawable.draw_line(1, 50);
-    drawable.draw_line(40, 30);
-
-    drawable.draw();
+    pc_mouse.move_up();
 
     Ok(())
 }

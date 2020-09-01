@@ -1,8 +1,8 @@
 use std::fs::File;
-use std::io::{self, prelude::*, BufReader};
+use std::io::{BufRead, Lines, BufReader};
 
-pub struct Parser {
-    gcode: String
+pub struct Parser<R: BufRead> {
+    gcode_buf: Lines<R>
 }
 
 pub struct MoveMetadata {
@@ -19,20 +19,25 @@ pub struct Command {
     command_type: GcodeCommand
 }
 
-impl Parser {
-    pub fn new(gcode: String) -> Self {
+impl <R: BufRead> Parser<R> {
+    pub fn new(gcode_buf: R) -> Self {
         Parser {
-            gcode
+            gcode_buf: gcode_buf.lines()
         }
     }
 
-    pub fn parse(&self) -> Vec<Command> {
-        vec![
+    pub fn parse(&mut self) -> Result<Vec<Command>, std::io::Error> {
+
+        while let Some(_line) = self.gcode_buf.next() {
+            println!("{:?}", _line);
+        }
+
+        Ok(vec![
             Command {
                 command_type: GcodeCommand::LinearMove(
                     MoveMetadata {x_axis: 12, y_axis: 22}
                 )
             }
-        ]
+        ])
     }
 }
