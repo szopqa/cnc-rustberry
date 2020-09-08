@@ -89,32 +89,32 @@ fn main() -> Result<(), Box<dyn Error>> {
     let _g_code: BufReader<File> = BufReader::new(_g_code);
     
     let mut parser = Parser::new(_g_code);
-    let _ = parser.parse();
+    let _commands = parser.parse().unwrap();
 
-    let mut pc_mouse = PcMouseMoveable::new(200, 200);
-    pc_mouse.calibrate();
+    // let mut pc_mouse = PcMouseMoveable::new(200, 200);
+    // pc_mouse.calibrate();
 
-    pc_mouse.move_down();
-    let destinations: Vec<(isize, isize)> = vec![
-        (200, 600),
-        (600, 200),
-        (600, 600),
-        (200, 200),
-    ];
+    // pc_mouse.move_down();
+    // let destinations: Vec<(isize, isize)> = vec![
+    //     (200, 600),
+    //     (600, 200),
+    //     (600, 600),
+    //     (200, 200),
+    // ];
 
-    for _offset in 0..100 {
-        for _each_dest in &destinations {
-            for (x, y) in Bresenham::new(
-                (pc_mouse._current_pos.0 as isize, 
-                 pc_mouse._current_pos.1 as isize),
-                (_each_dest.0 + _offset * 10, _each_dest.1 + _offset * 10),
-            ) {
-                pc_mouse.move_to_relative_pos(x as i32, y as i32)
-            }
-        }
-    }
+    // for _offset in 0..100 {
+    //     for _each_dest in &destinations {
+    //         for (x, y) in Bresenham::new(
+    //             (pc_mouse._current_pos.0 as isize, 
+    //              pc_mouse._current_pos.1 as isize),
+    //             (_each_dest.0 + _offset * 10, _each_dest.1 + _offset * 10),
+    //         ) {
+    //             pc_mouse.move_to_relative_pos(x as i32, y as i32)
+    //         }
+    //     }
+    // }
 
-    pc_mouse.move_up();
+    // pc_mouse.move_up();
 
     Ok(())
 }
