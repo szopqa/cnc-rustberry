@@ -1,6 +1,10 @@
 # cnc-rustberry
 CNC raspberry controller implemented in Rust
 
+## Plotter using PC mouse
+
+![](demo.gif)
+
 
 ## G-code interpreter
 
