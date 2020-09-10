@@ -1,35 +1,8 @@
 use std::io::{BufRead, Lines};
+use super::gcode_driver::*;
 
 pub struct Parser<R: BufRead> {
     gcode_buf: Lines<R>
-}
-
-#[derive(Debug)]
-pub struct MoveCommandData {
-    x_axis: Option<f32>,
-    y_axis: Option<f32>,
-    z_axis: Option<f32>,
-}
-
-impl Default for MoveCommandData {
-    fn default() -> Self { 
-        Self {
-            x_axis: None,
-            y_axis: None,
-            z_axis: None
-        }
-    }
-}
-
-#[derive(Debug)]
-pub enum Command {
-    RapidMove(MoveCommandData),
-    LinearMove(MoveCommandData),
-    Home(MoveCommandData)
-}
-
-pub struct GCodeDriver {
-    pub commands: Vec<Command>
 }
 
 impl <R: BufRead> Parser<R> {
@@ -61,13 +34,17 @@ impl <R: BufRead> Parser<R> {
         _move_command_data
     }
 
-    fn parse_g_command(_command: &str) -> Command {
+    fn parse_g_command(_command: &str, _gcode_driver: &GCodeDriver) -> Command {
         let mut _move_command_data: MoveCommandData = Self::parse_command_data(_command);
 
         match &_command[..3] {
             "G0 " | "G00" => Command::RapidMove(_move_command_data),
             "G1 " | "G01" => Command::LinearMove(_move_command_data),
-            "G28" => Command::Home(_move_command_data),
+            "G20" => Command::SetInches,
+            "G21" => Command::SetMillimeters,
+            "G28" => Command::Home(_gcode_driver.home_position),
+            "G90" => Command::SetAbsolutePositioning,
+            "G91" => Command::SetRelativePositioning,
             _ => panic!(_command[..3].to_string())
         }
     }
@@ -75,10 +52,10 @@ impl <R: BufRead> Parser<R> {
     fn get_command(_line: &str, _gcode_driver: &GCodeDriver) -> Option<Command> {
         match &_line[..1] {
             "G" => { 
-                let _g_command = Self::parse_g_command(_line); 
+                let _g_command = Self::parse_g_command(_line, _gcode_driver); 
                 Some(_g_command)
             },
-            "X" | "Y" | "Z" => {
+            "X" | "Y" | "Z" => { // TODO: Refactor parsing parameters for 'nested' commands
                 let _last_command: &Command = _gcode_driver.commands.last().unwrap();
                 match _last_command {
                     Command::RapidMove(_) => {
@@ -89,9 +66,7 @@ impl <R: BufRead> Parser<R> {
                         let _command_data = Self::parse_command_data(_line);
                         return Some(Command::LinearMove(_command_data));
                     },
-                    Command::Home(_) => {
-                        unreachable!();
-                    }
+                    _ => unreachable!()
                 }
             },
             _ => { None }
@@ -107,15 +82,11 @@ impl <R: BufRead> Parser<R> {
     }
 
     pub fn parse(&mut self) -> Result<GCodeDriver, std::io::Error> {
-        let mut _commands: Vec<Command> = vec![];
-        let mut _gcode_driver: GCodeDriver = GCodeDriver {
-            commands: _commands
-        };
+        let mut _gcode_driver: GCodeDriver = GCodeDriver::default();
 
         let mut _line_num: i64 = 1;
         while let Some(_line) = self.gcode_buf.next() {
             let _line = _line.unwrap();
-            // println!("[DEBUG]: Processing line: {}", _line);
 
             if _line.trim().is_empty() {
                 Self::parsing_error_for_line(_line_num, "Line is empty");
@@ -126,7 +97,15 @@ impl <R: BufRead> Parser<R> {
             }
 
             match Self::get_command(&_line, &_gcode_driver) {
-                Some(_command) => _gcode_driver.commands.push(_command),
+                Some(_command) => {
+                    match _command {
+                        Command::SetAbsolutePositioning => _gcode_driver.set_to_absolute(),
+                        Command::SetRelativePositioning => _gcode_driver.set_to_relative(),
+                        Command::SetMillimeters => _gcode_driver.set_unit_to_millimeters(),
+                        Command::SetInches => _gcode_driver.set_unit_to_inches(),
+                        _ => _gcode_driver.commands.push(_command)
+                    }
+                },
                 None => {
                     Self::parsing_error_for_line(_line_num, &format!("Unexpected command. Line: {}", _line));
                 }
