@@ -85,11 +85,11 @@ impl DrawablePlatform {
 const GPIO_PWM: u8 = 23;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let _g_code = File::open(String::from("plot.g"))?;
-    let _g_code: BufReader<File> = BufReader::new(_g_code);
+    let _gcode = File::open(String::from("plot.g"))?;
+    let _gcode: BufReader<File> = BufReader::new(_gcode);
     
-    let mut parser = Parser::new(_g_code);
-    let _commands = parser.parse().unwrap();
+    let mut parser = Parser::new(_gcode);
+    let _gcode_driver = parser.parse().unwrap();
 
     // let mut pc_mouse = PcMouseMoveable::new(200, 200);
     // pc_mouse.calibrate();
