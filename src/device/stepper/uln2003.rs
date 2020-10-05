@@ -1,5 +1,6 @@
-use super::stepper::Stepper;
-use rppal::gpio::Gpio;
+use super::stepper::{SteppingMode};
+use rppal::gpio::{Gpio, OutputPin};
+use std::{thread, time};
 
 // Stepper driver data sheet: https://www.st.com/resource/en/datasheet/uln2001.pdf
 pub struct UlnStepperStepperDriver {
@@ -24,30 +25,54 @@ impl UlnStepperStepperDriver {
         }
     }
 
-    pub fn rotate(&self, dir: isize) {
-        let mut steps = 0;
+    pub fn rotate(&self, _stepping_mode: SteppingMode, _max_steps: usize) {
+        let mut steps: isize = 0;
+
+        let mut _gpio_pins: Vec<OutputPin> = (0..4).map(|_pin_index| {
+            Gpio::new().unwrap().get(self.output_pins[_pin_index]).unwrap().into_output()
+        }).collect();
+
+        let dir: isize = match _stepping_mode {
+            SteppingMode::CounterClockwiseHalfStep => 1,
+            SteppingMode::CounterClockwiseStep => 2,
+
+            SteppingMode::ClockwiseHalfStep => -1,
+            SteppingMode::ClockwiseStep => -2,
+        };
+
+        let mut _steps_counter = 0;
 
         loop {
             println!("Step: {}", steps);
-            println!("command: {:?}", self.move_seq[steps]);
+            println!("command: {:?}", self.move_seq[steps as usize]);
 
-            for _each_pin_index in 0..=4 {
-                let mut xpin = Gpio::new().unwrap().get(self.output_pins[_each_pin_index]).unwrap().into_output();
+            for _each_pin_index in 0..4 {
+                let _output_pin = &mut _gpio_pins[_each_pin_index];
 
-                if self.move_seq[steps][_each_pin_index] != 0 {
-                    xpin.set_high();
+                if self.move_seq[steps as usize][_each_pin_index] != 0 {
+                    _output_pin.set_high();
                 } else {
-                    xpin.set_low();
+                    _output_pin.set_low();
                 }
             }
 
-            steps += 1;
+            steps = steps + dir;
 
-            if steps >= self.move_seq.len() {
+            if steps >= self.move_seq.len() as isize {
                 steps = 0;
-            } else {
-                steps = steps + dir as usize;
+            } 
+
+            if steps < 0 {
+                // println!("Got: {}", self.move_seq.len() + dir as usize);
+                steps = self.move_seq.len() as isize + dir;
             }
+
+            thread::sleep(time::Duration::from_millis(1));
+
+            if (_max_steps != 0 && _steps_counter == _max_steps) {
+                break;
+            }
+            _steps_counter += 1;
         }
     }
 }
