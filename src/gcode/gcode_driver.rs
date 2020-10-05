@@ -20,6 +20,7 @@ pub enum Command {
     RapidMove(MoveCommandData),
     LinearMove(MoveCommandData),
     Home(MoveCommandData),
+    SetHome(MoveCommandData),
     SetInches,
     SetMillimeters,
     SetAbsolutePositioning,

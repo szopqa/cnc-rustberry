@@ -91,6 +91,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut parser = Parser::new(_gcode);
     let _gcode_driver = parser.parse().unwrap();
 
+    for _each_command in &_gcode_driver.commands {
+        println!("{:?}", _each_command);
+    }
+
     // let mut pc_mouse = PcMouseMoveable::new(200, 200);
     // pc_mouse.calibrate();
 

@@ -37,15 +37,16 @@ impl <R: BufRead> Parser<R> {
     fn parse_g_command(_command: &str, _gcode_driver: &GCodeDriver) -> Command {
         let mut _move_command_data: MoveCommandData = Self::parse_command_data(_command);
 
-        match &_command[..3] {
-            "G0 " | "G00" => Command::RapidMove(_move_command_data),
-            "G1 " | "G01" => Command::LinearMove(_move_command_data),
-            "G20" => Command::SetInches,
-            "G21" => Command::SetMillimeters,
-            "G28" => Command::Home(_gcode_driver.home_position),
-            "G90" => Command::SetAbsolutePositioning,
-            "G91" => Command::SetRelativePositioning,
-            _ => panic!(_command[..3].to_string())
+        match &_command.split_ascii_whitespace().next() {
+            Some("G0") | Some("G00") => Command::RapidMove(_move_command_data),
+            Some("G1") | Some("G01") => Command::LinearMove(_move_command_data),
+            Some("G20") => Command::SetInches,
+            Some("G21") => Command::SetMillimeters,
+            Some("G28") => Command::Home(_gcode_driver.home_position),
+            Some("G28.1") => Command::SetHome(_move_command_data),
+            Some("G90") => Command::SetAbsolutePositioning,
+            Some("G91") => Command::SetRelativePositioning,
+            _ => panic!(_command.to_string())
         }
     }
 
@@ -103,6 +104,7 @@ impl <R: BufRead> Parser<R> {
                         Command::SetRelativePositioning => _gcode_driver.set_to_relative(),
                         Command::SetMillimeters => _gcode_driver.set_unit_to_millimeters(),
                         Command::SetInches => _gcode_driver.set_unit_to_inches(),
+                        Command::SetHome(val) => _gcode_driver.home_position = val,
                         _ => _gcode_driver.commands.push(_command)
                     }
                 },
@@ -110,10 +112,6 @@ impl <R: BufRead> Parser<R> {
                     Self::parsing_error_for_line(_line_num, &format!("Unexpected command. Line: {}", _line));
                 }
             }
-        }
-
-        for _each_command in &_gcode_driver.commands {
-            println!("{:?}", _each_command);
         }
 
         Ok(_gcode_driver)
