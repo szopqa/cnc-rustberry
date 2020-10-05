@@ -1,12 +1,10 @@
 use rppal::gpio::Gpio;
 use std::error::Error;
 use std::fs::File;
-use std::io::{self, prelude::*, BufReader, Read};
+use std::io::{BufReader};
 extern crate bresenham;
 use bresenham::Bresenham;
 
-use std::thread;
-use std::time::Duration;
 
 mod gcode;
 use gcode::parser::Parser;
@@ -15,7 +13,8 @@ mod device;
 use device::{
     cnc_plotter_device::CncPlotterDevice,
     servo::{servo::Servo, sg90::Sg90},
-    moveables::{moveable::Moveable, pc_mouse::PcMouseMoveable}
+    moveables::{moveable::Moveable, pc_mouse::PcMouseMoveable},
+    stepper::{stepper::Stepper, uln2003::UlnStepperStepperDriver}
 };
 
 
