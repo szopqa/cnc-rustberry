@@ -14,7 +14,7 @@ use device::{
     cnc_plotter_device::CncPlotterDevice,
     servo::{servo::Servo, sg90::Sg90},
     moveables::{moveable::Moveable, pc_mouse::PcMouseMoveable},
-    stepper::{stepper::Stepper, uln2003::UlnStepperStepperDriver}
+    stepper::{stepper::{Stepper, SteppingDirection}, uln2003::UlnStepperStepperDriver}
 };
 
 
@@ -82,6 +82,8 @@ impl DrawablePlatform {
 }
 
 const GPIO_PWM: u8 = 23;
+const X_AXIS_STEPPER_PINS: [u8; 4] = [19, 26, 20, 21];
+const Y_AXIS_STEPPER_PINS: [u8; 4] = [17, 22, 23, 24];
 
 fn main() -> Result<(), Box<dyn Error>> {
     let _gcode = File::open(String::from("plot.g"))?;
@@ -94,30 +96,43 @@ fn main() -> Result<(), Box<dyn Error>> {
         println!("{:?}", _each_command);
     }
 
-    // let mut pc_mouse = PcMouseMoveable::new(200, 200);
-    // pc_mouse.calibrate();
+    // stepper motor initialization
+    let mut x_axis_stepper = UlnStepperStepperDriver::new(X_AXIS_STEPPER_PINS);
+    let mut y_axis_stepper = UlnStepperStepperDriver::new(Y_AXIS_STEPPER_PINS);
 
-    // pc_mouse.move_down();
-    // let destinations: Vec<(isize, isize)> = vec![
-    //     (200, 600),
-    //     (600, 200),
-    //     (600, 600),
-    //     (200, 200),
-    // ];
+    loop {
+        x_axis_stepper.rotate_for_angle(2.0, SteppingDirection::CW);
+        y_axis_stepper.rotate_for_angle(2.0, SteppingDirection::CCW);
+    }
 
-    // for _offset in 0..100 {
-    //     for _each_dest in &destinations {
-    //         for (x, y) in Bresenham::new(
-    //             (pc_mouse._current_pos.0 as isize, 
-    //              pc_mouse._current_pos.1 as isize),
-    //             (_each_dest.0 + _offset * 10, _each_dest.1 + _offset * 10),
-    //         ) {
-    //             pc_mouse.move_to_relative_pos(x as i32, y as i32)
-    //         }
-    //     }
-    // }
+    /* 
+    Supported only outside raspberry
 
-    // pc_mouse.move_up();
+    let mut pc_mouse = PcMouseMoveable::new(200, 200);
+    pc_mouse.calibrate();
+
+    pc_mouse.move_down();
+    let destinations: Vec<(isize, isize)> = vec![
+        (200, 600),
+        (600, 200),
+        (600, 600),
+        (200, 200),
+    ];
+
+    for _offset in 0..100 {
+        for _each_dest in &destinations {
+            for (x, y) in Bresenham::new(
+                (pc_mouse._current_pos.0 as isize, 
+                 pc_mouse._current_pos.1 as isize),
+                (_each_dest.0 + _offset * 10, _each_dest.1 + _offset * 10),
+            ) {
+                pc_mouse.move_to_relative_pos(x as i32, y as i32)
+            }
+        }
+    }
+
+    pc_mouse.move_up();
+    */
 
     Ok(())
 }

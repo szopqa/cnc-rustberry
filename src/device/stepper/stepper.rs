@@ -3,10 +3,7 @@ pub trait Stepper {
     fn rotate_counter_clockwise(&self);
 }
 
-pub enum SteppingMode {
-    ClockwiseHalfStep,
-    CounterClockwiseHalfStep,
-
-    ClockwiseStep,
-    CounterClockwiseStep,
+pub enum SteppingDirection {
+    CW,
+    CCW,
 }

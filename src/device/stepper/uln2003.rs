@@ -1,17 +1,18 @@
-use super::stepper::{SteppingMode};
+use super::stepper::{SteppingDirection};
 use rppal::gpio::{Gpio, OutputPin};
 use std::{thread, time};
 
 // Stepper driver data sheet: https://www.st.com/resource/en/datasheet/uln2001.pdf
 pub struct UlnStepperStepperDriver {
-    output_pins: [u8;4],
-    move_seq: [[u8;4];8]
+    output_pins: Vec<OutputPin>,
+    move_seq: [[u8;4];8],
+    steps_for_full_rotation: usize
 }
 
 impl UlnStepperStepperDriver {
-    pub fn new() -> Self {
+    pub fn new(_gpio_output_pins: [u8;4]) -> Self {
         Self {
-            output_pins: [17, 22, 23, 24],
+            output_pins: _gpio_output_pins.into_iter().map(|_pin| {Gpio::new().unwrap().get(*_pin).unwrap().into_output()}).collect(),
             move_seq: [
                 [0,0,0,1], //  A
                 [0,0,1,1], //  AB
@@ -21,55 +22,55 @@ impl UlnStepperStepperDriver {
                 [1,1,0,0], //  CD
                 [1,0,0,0], //  D
                 [1,0,0,1], //  DA
-            ]
+            ],
+            steps_for_full_rotation: 4096
         }
     }
 
-    pub fn rotate(&self, _stepping_mode: SteppingMode, _max_steps: usize) {
-        let mut steps: isize = 0;
+    fn evaluate_step (_stepping_mode: SteppingDirection) -> isize {
+        match _stepping_mode {
+            SteppingDirection::CW => -1,
+            SteppingDirection::CCW => 1,
+        }
+    }
 
-        let mut _gpio_pins: Vec<OutputPin> = (0..4).map(|_pin_index| {
-            Gpio::new().unwrap().get(self.output_pins[_pin_index]).unwrap().into_output()
-        }).collect();
+    pub fn rotate_full_circle(&mut self, _stepping_mode: SteppingDirection) {
+        self.rotate_for_angle(360.0, _stepping_mode);
+    }
 
-        let dir: isize = match _stepping_mode {
-            SteppingMode::CounterClockwiseHalfStep => 1,
-            SteppingMode::CounterClockwiseStep => 2,
+    pub fn rotate_for_angle(&mut self, _angle: f32, _stepping_mode: SteppingDirection) {
+        let _steps = (self.steps_for_full_rotation * _angle as usize) / 360;
 
-            SteppingMode::ClockwiseHalfStep => -1,
-            SteppingMode::ClockwiseStep => -2,
-        };
+        let mut step: isize = 0;
+
+        let dir: isize = Self::evaluate_step(_stepping_mode);
 
         let mut _steps_counter = 0;
 
         loop {
-            println!("Step: {}", steps);
-            println!("command: {:?}", self.move_seq[steps as usize]);
-
             for _each_pin_index in 0..4 {
-                let _output_pin = &mut _gpio_pins[_each_pin_index];
+                let _output_pin = &mut self.output_pins[_each_pin_index];
 
-                if self.move_seq[steps as usize][_each_pin_index] != 0 {
+                if self.move_seq[step as usize][_each_pin_index] != 0 {
                     _output_pin.set_high();
                 } else {
                     _output_pin.set_low();
                 }
             }
 
-            steps = steps + dir;
+            step = step + dir;
 
-            if steps >= self.move_seq.len() as isize {
-                steps = 0;
+            if step >= self.move_seq.len() as isize {
+                step = 0;
             } 
 
-            if steps < 0 {
-                // println!("Got: {}", self.move_seq.len() + dir as usize);
-                steps = self.move_seq.len() as isize + dir;
+            if step < 0 {
+                step = self.move_seq.len() as isize + dir;
             }
 
             thread::sleep(time::Duration::from_millis(1));
 
-            if (_max_steps != 0 && _steps_counter == _max_steps) {
+            if (_steps_counter == _steps) {
                 break;
             }
             _steps_counter += 1;
