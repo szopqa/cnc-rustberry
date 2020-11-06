@@ -1,4 +1,4 @@
-use rppal::gpio::Gpio;
+
 use std::error::Error;
 use std::fs::File;
 use std::io::{BufReader};
@@ -111,8 +111,8 @@ fn draw_using_pc_mouse() {
     for _offset in 0..100 {
         for _each_dest in &destinations {
             for (x, y) in Bresenham::new(
-                (pc_mouse._current_pos.0 as isize, 
-                 pc_mouse._current_pos.1 as isize),
+                (pc_mouse._current_pos.get_x() as isize, 
+                 pc_mouse._current_pos.get_y() as isize),
                 (_each_dest.0 + _offset * 10, _each_dest.1 + _offset * 10),
             ) {
                 pc_mouse.move_to_relative_pos(x as i32, y as i32)

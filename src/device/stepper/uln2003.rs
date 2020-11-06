@@ -12,7 +12,7 @@ pub struct UlnStepperStepperDriver {
 impl UlnStepperStepperDriver {
     pub fn new(_gpio_output_pins: [u8;4]) -> Self {
         Self {
-            output_pins: _gpio_output_pins.into_iter().map(|_pin| {Gpio::new().unwrap().get(*_pin).unwrap().into_output()}).collect(),
+            output_pins: _gpio_output_pins.iter().map(|_pin| {Gpio::new().unwrap().get(*_pin).unwrap().into_output()}).collect(),
             move_seq: [
                 [0,0,0,1], //  A
                 [0,0,1,1], //  AB
@@ -70,7 +70,7 @@ impl UlnStepperStepperDriver {
 
             thread::sleep(time::Duration::from_millis(1));
 
-            if (_steps_counter == _steps) {
+            if _steps_counter == _steps {
                 break;
             }
             _steps_counter += 1;

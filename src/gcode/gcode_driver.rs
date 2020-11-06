@@ -1,5 +1,5 @@
 use std::io;
-use crate::device::moveables::moveable::Moveable;
+use crate::device::moveables::moveable::{Moveable, Position};
 
 #[derive(Debug, Clone, Copy)]
 pub struct MoveCommandData {
@@ -40,11 +40,13 @@ pub enum Positioning {
     Absolute
 }
 
+
 pub struct GCodeDriver {
     pub commands: Vec<Command>,
     pub home_position: MoveCommandData,
     pub unit: Unit,
-    pub positioning: Positioning
+    pub positioning: Positioning,
+    pub position: Position
 }
 
 impl Default for GCodeDriver {
@@ -53,7 +55,8 @@ impl Default for GCodeDriver {
             commands: vec![],
             home_position: MoveCommandData::default(),
             unit: Unit::Millimeters,
-            positioning: Positioning::Absolute
+            positioning: Positioning::Absolute,
+            position: Position::default()
         }
     }
 }
@@ -77,7 +80,18 @@ impl GCodeDriver {
 
     pub fn execute_commands(&self, _moveable: &Box<dyn Moveable>) -> Result <(), io::Error>{
         for _each_command in &self.commands {
-            println!("{:?}", _each_command);
+            println!("Executing command: ${:?}", _each_command);
+
+            match _each_command {
+                Command::RapidMove(_) => {}
+                Command::LinearMove(_) => {}
+                Command::Home(_) => {}
+                Command::SetHome(_) => {}
+                Command::SetInches => {}
+                Command::SetMillimeters => {}
+                Command::SetAbsolutePositioning => {}
+                Command::SetRelativePositioning => {}
+            }
         }
 
         Ok(())

@@ -1,5 +1,5 @@
 use rppal::gpio::OutputPin;
-use std::thread;
+
 use std::time::Duration;
 
 use super::servo::Servo;
