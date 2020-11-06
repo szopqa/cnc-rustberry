@@ -1,3 +1,6 @@
+use std::io;
+use crate::device::moveables::moveable::Moveable;
+
 #[derive(Debug, Clone, Copy)]
 pub struct MoveCommandData {
     pub x_axis: Option<f32>,
@@ -70,5 +73,13 @@ impl GCodeDriver {
 
     pub fn set_unit_to_inches(&mut self) {
         self.unit = Unit::Inches;
+    }
+
+    pub fn execute_commands(&self, _moveable: &Box<dyn Moveable>) -> Result <(), io::Error>{
+        for _each_command in &self.commands {
+            println!("{:?}", _each_command);
+        }
+
+        Ok(())
     }
 }

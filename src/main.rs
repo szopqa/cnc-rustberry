@@ -85,17 +85,7 @@ const GPIO_PWM: u8 = 23;
 const X_AXIS_STEPPER_PINS: [u8; 4] = [19, 26, 20, 21];
 const Y_AXIS_STEPPER_PINS: [u8; 4] = [17, 22, 23, 24];
 
-fn main() -> Result<(), Box<dyn Error>> {
-    let _gcode = File::open(String::from("plot.g"))?;
-    let _gcode: BufReader<File> = BufReader::new(_gcode);
-    
-    let mut parser = Parser::new(_gcode);
-    let _gcode_driver = parser.parse().unwrap();
-
-    for _each_command in &_gcode_driver.commands {
-        println!("{:?}", _each_command);
-    }
-
+fn test_hardware() {
     // stepper motor initialization
     let mut x_axis_stepper = UlnStepperStepperDriver::new(X_AXIS_STEPPER_PINS);
     let mut y_axis_stepper = UlnStepperStepperDriver::new(Y_AXIS_STEPPER_PINS);
@@ -104,10 +94,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         x_axis_stepper.rotate_for_angle(2.0, SteppingDirection::CW);
         y_axis_stepper.rotate_for_angle(2.0, SteppingDirection::CCW);
     }
+}
 
-    /* 
-    Supported only outside raspberry
-
+fn draw_using_pc_mouse() {
     let mut pc_mouse = PcMouseMoveable::new(200, 200);
     pc_mouse.calibrate();
 
@@ -132,7 +121,31 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     pc_mouse.move_up();
+}
+
+fn main() -> Result<(), Box<dyn Error>> {
+    let _gcode: BufReader<File> = BufReader::new(File::open(String::from("plot.g"))?);
+    
+    let mut parser = Parser::new(_gcode);
+
+    let _gcode_driver = parser.parse()?;
+
+    let _pc_mouse: Box<dyn Moveable> = Box::new(PcMouseMoveable::new(200, 200));
+
+    _gcode_driver.execute_commands(&_pc_mouse)?;
+
+    /*
+        Currently supported only on raspberry
     */
+
+    // test_hardware();
+
+
+    /* 
+        Supported only outside raspberry
+    */
+
+    // draw_using_pc_mouse();
 
     Ok(())
 }
