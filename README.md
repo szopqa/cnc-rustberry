@@ -3,7 +3,9 @@ CNC raspberry controller implemented in Rust
 
 ## Plotter using PC mouse
 
-![](./assets/demo.gif)
+Results for [example g-code file](./pc_plot.g) using pc mouse plotter
+
+![](./assets/demo_pc_plot.gif)
 
 ## G-code interpreter
 

@@ -34,7 +34,7 @@ impl <R: BufRead> Parser<R> {
         _move_command_data
     }
 
-    fn parse_g_command(_command: &str, _gcode_driver: &GCodeDriver) -> Command {
+    fn parse_g_command(_command: &str) -> Command {
         let mut _move_command_data: MoveCommandData = Self::parse_command_data(_command);
 
         match &_command.split_ascii_whitespace().next() {
@@ -42,7 +42,7 @@ impl <R: BufRead> Parser<R> {
             Some("G1") | Some("G01") => Command::LinearMove(_move_command_data),
             Some("G20") => Command::SetInches,
             Some("G21") => Command::SetMillimeters,
-            Some("G28") => Command::Home(_gcode_driver.home_position),
+            Some("G28") => Command::Home,
             Some("G28.1") => Command::SetHome(_move_command_data),
             Some("G90") => Command::SetAbsolutePositioning,
             Some("G91") => Command::SetRelativePositioning,
@@ -53,7 +53,7 @@ impl <R: BufRead> Parser<R> {
     fn get_command(_line: &str, _gcode_driver: &GCodeDriver) -> Option<Command> {
         match &_line[..1] {
             "G" => { 
-                let _g_command = Self::parse_g_command(_line, _gcode_driver); 
+                let _g_command = Self::parse_g_command(_line); 
                 Some(_g_command)
             },
             "X" | "Y" | "Z" => { // TODO: Refactor parsing parameters for 'nested' commands
@@ -99,14 +99,7 @@ impl <R: BufRead> Parser<R> {
 
             match Self::get_command(&_line, &_gcode_driver) {
                 Some(_command) => {
-                    match _command {
-                        Command::SetAbsolutePositioning => _gcode_driver.set_to_absolute(),
-                        Command::SetRelativePositioning => _gcode_driver.set_to_relative(),
-                        Command::SetMillimeters => _gcode_driver.set_unit_to_millimeters(),
-                        Command::SetInches => _gcode_driver.set_unit_to_inches(),
-                        Command::SetHome(val) => _gcode_driver.home_position = val,
-                        _ => _gcode_driver.commands.push(_command)
-                    }
+                    _gcode_driver.commands.push(_command)
                 },
                 None => {
                     Self::parsing_error_for_line(_line_num, &format!("Unexpected command. Line: {}", _line));

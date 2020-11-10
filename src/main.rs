@@ -1,4 +1,3 @@
-
 use std::error::Error;
 use std::fs::File;
 use std::io::{BufReader};
@@ -13,10 +12,17 @@ mod device;
 use device::{
     cnc_plotter_device::CncPlotterDevice,
     servo::{servo::Servo, sg90::Sg90},
-    moveables::{moveable::Moveable, pc_mouse::PcMouseMoveable},
     stepper::{stepper::{Stepper, SteppingDirection}, uln2003::UlnStepperStepperDriver}
 };
 
+mod moveables;
+use moveables::{moveable::Moveable, pc_mouse::PcMouseMoveable};
+
+mod geometry;
+use geometry::{
+    position::Position,
+    path
+};
 
 struct DrawablePlatform {
     x_pos: i32,
@@ -97,10 +103,10 @@ fn test_hardware() {
 }
 
 fn draw_using_pc_mouse() {
-    let mut pc_mouse = PcMouseMoveable::new(200, 200);
+    let mut pc_mouse = PcMouseMoveable::new(200.0, 200.0);
     pc_mouse.calibrate();
 
-    pc_mouse.move_down();
+    // pc_mouse.move_down();
     let destinations: Vec<(isize, isize)> = vec![
         (200, 600),
         (600, 200),
@@ -113,26 +119,35 @@ fn draw_using_pc_mouse() {
             for (x, y) in Bresenham::new(
                 (pc_mouse._current_pos.get_x() as isize, 
                  pc_mouse._current_pos.get_y() as isize),
-                (_each_dest.0 + _offset * 10, _each_dest.1 + _offset * 10),
+                (_each_dest.0, _each_dest.1),
             ) {
-                pc_mouse.move_to_relative_pos(x as i32, y as i32)
+                pc_mouse.move_to_absolute_pos(x as f32, y as f32);
             }
         }
     }
 
-    pc_mouse.move_up();
+    // pc_mouse.move_up();
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let _gcode: BufReader<File> = BufReader::new(File::open(String::from("plot.g"))?);
+    let _gcode: BufReader<File> = BufReader::new(File::open(String::from("pc_plot.g"))?);
     
     let mut parser = Parser::new(_gcode);
 
-    let _gcode_driver = parser.parse()?;
+    let mut _gcode_driver = parser.parse()?;
 
-    let _pc_mouse: Box<dyn Moveable> = Box::new(PcMouseMoveable::new(200, 200));
+    let mut _pc_mouse: Box<dyn Moveable> = Box::new(PcMouseMoveable::new(200.0, 200.0));
 
-    _gcode_driver.execute_commands(&_pc_mouse)?;
+    _gcode_driver.execute_commands(&mut _pc_mouse)?;
+
+    // let _pos_a = Position::new(0,0,Some(0));
+    // let _pos_b = Position::new(20,2,Some(0));
+
+    // path::_line_from_two_positions(&_pos_a,& _pos_b).iter().for_each(|_pos| {
+    //     println!("{}, {}, {}", _pos.get_x(), _pos.get_y(), _pos.get_z().unwrap_or(0));
+    // });
+
+    // draw_using_pc_mouse();
 
     /*
         Currently supported only on raspberry

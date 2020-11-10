@@ -1,7 +1,14 @@
 use enigo::*;
 use std::{thread, time};
 
-use super::moveable::{Moveable, Position};
+use super::{
+    moveable::{Moveable}
+};
+
+use crate::geometry::{
+    position::Position,
+    path
+};
 
 pub struct PcMouseMoveable {
     pub _current_pos: Position,
@@ -9,7 +16,7 @@ pub struct PcMouseMoveable {
 }
 
 impl PcMouseMoveable {
-    pub fn new(_x: i32, _y: i32) -> Self {
+    pub fn new(_x: f32, _y: f32) -> Self {
         let mut _pos = Position::default();
         _pos.set_x(_x);
         _pos.set_y(_y);
@@ -24,8 +31,8 @@ impl PcMouseMoveable {
 impl Moveable for PcMouseMoveable {
     fn calibrate(&mut self) {
         self._move_driver.mouse_move_to(
-            self._current_pos.get_x(), 
-            self._current_pos.get_y()
+            self._current_pos.get_x() as i32, 
+            self._current_pos.get_y() as i32
         );
     }
 
@@ -51,23 +58,33 @@ impl Moveable for PcMouseMoveable {
         );
     }
 
-    fn move_to_relative_pos(&mut self, _x: i32, _y: i32) { 
-        let _to_x = _x - self._current_pos.get_x();
-        let _to_y = _y - self._current_pos.get_y();
+    fn move_to_relative_pos(&mut self, _x: f32, _y: f32) { 
+        let _left_btn = MouseButton::Left;
 
-        self._move_driver.mouse_move_relative(_to_x, _to_y);
-
-        self._current_pos.update_position(
-            _to_x,
-            _to_y,
-            self._current_pos.get_z()
+        let _dest_pos = Position::evaluate_relative_point(
+            &self._current_pos,
+             _x,
+              _y, 
+              None
         );
+        self._move_driver.mouse_down(_left_btn);
 
-        thread::sleep(time::Duration::from_millis(2));
+        path::_line_from_two_positions(self.get_current_pos(), &_dest_pos).iter().for_each(|_p| {
+            self.move_to_absolute_pos(_p.get_x(), _p.get_y());
+
+            self._current_pos.update_position(
+                _p.get_x(),
+                _p.get_y(),
+                self._current_pos.get_z()
+            );
+
+            thread::sleep(time::Duration::from_millis(2));
+        });
+        self._move_driver.mouse_up(_left_btn);
     }
 
-    fn move_to_absolute_pos(&mut self, _x: i32, _y: i32) { 
-        self._move_driver.mouse_move_to(_x, _y);
+    fn move_to_absolute_pos(&mut self, _x: f32, _y: f32) { 
+        self._move_driver.mouse_move_to(_x as i32, _y as i32);
 
         self._current_pos.update_position(
             _x,
@@ -79,6 +96,7 @@ impl Moveable for PcMouseMoveable {
     }
 
     fn get_current_pos(&self) -> &Position {
+        println!("{}, {}, {:?}", self._current_pos.get_x(), self._current_pos.get_y(), self._current_pos.get_z());
         &self._current_pos
     }
 }
