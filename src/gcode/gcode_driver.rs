@@ -59,7 +59,6 @@ pub enum Positioning {
     Absolute
 }
 
-
 pub struct GCodeDriver {
     pub commands: Vec<Command>,
     pub home_position: Position,
@@ -81,25 +80,9 @@ impl Default for GCodeDriver {
 }
 
 impl GCodeDriver {
-    pub fn set_to_relative(&mut self) {
-        self.positioning = Positioning::Relative;
-    }
-
-    pub fn set_to_absolute(&mut self) {
-        self.positioning = Positioning::Absolute;
-    }
-
-    pub fn set_unit_to_millimeters(&mut self) {
-        self.unit = Unit::Millimeters;
-    }
-
-    pub fn set_unit_to_inches(&mut self) {
-        self.unit = Unit::Inches;
-    }
-
     pub fn execute_commands(&mut self, _moveable: &mut Box<dyn Moveable>) -> Result <(), io::Error>{
         for _each_command in &self.commands {
-            println!("{:?}", _each_command);
+            println!("Executing: {:?}", _each_command);
 
             match _each_command {
                 Command::RapidMove(_move_command) => {

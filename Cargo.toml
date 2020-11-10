@@ -9,6 +9,5 @@ edition = "2018"
 [dependencies]
 rppal = "0.11.3"
 tokio = "0.2.21"
-bresenham = "0.1.1"
 enigo = "0.0.14"
 line_drawing = "0.8.0"
