@@ -4,7 +4,7 @@ use crate::moveables::{
 };
 
 use crate::geometry::{
-    position::{Position}
+    position::{Position, ZPosition}
 };
 
 #[derive(Debug, Clone, Copy)]
@@ -30,8 +30,8 @@ impl From<&MoveCommandData> for Position {
             _command_data.x_axis.unwrap_or(0.0),
             _command_data.y_axis.unwrap_or(0.0),
             match _command_data.z_axis {
-                Some(_z_val) => Some(_z_val as u8),
-                None => Some(0)
+                Some(_z_val) => ZPosition::from(_z_val),
+                None => ZPosition::Up // TODO: fix, taking Z position of last move containing Z position value
             },
         )
     }

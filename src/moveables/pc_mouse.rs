@@ -6,7 +6,7 @@ use super::{
 };
 
 use crate::geometry::{
-    position::Position,
+    position::{Position, ZPosition},
     path
 };
 
@@ -43,7 +43,7 @@ impl Moveable for PcMouseMoveable {
         self._current_pos.update_position(
             self._current_pos.get_x(), 
             self._current_pos.get_y(),
-            Some(1)
+            ZPosition::Up
         );
     }
 
@@ -54,7 +54,7 @@ impl Moveable for PcMouseMoveable {
         self._current_pos.update_position(
             self._current_pos.get_x(), 
             self._current_pos.get_y(),
-            Some(0)
+            ZPosition::Down
         );
     }
 
@@ -63,9 +63,9 @@ impl Moveable for PcMouseMoveable {
 
         let _dest_pos = Position::evaluate_relative_point(
             &self._current_pos,
-             _x_path,
-              _y_path, 
-              None
+            _x_path,
+            _y_path, 
+            ZPosition::Down
         );
         self._move_driver.mouse_down(_left_btn);
 
