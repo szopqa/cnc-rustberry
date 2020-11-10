@@ -93,7 +93,7 @@ impl GCodeDriver {
                             _moveable.move_to_relative_pos(_pos.get_x(), _pos.get_y());
                         }
                         Positioning::Absolute => {
-                            _moveable.move_to_absolute_pos(_pos.get_x(), _pos.get_y());
+                            _moveable.move_to_absolute_pos(&_pos);
                         }
                     }
                 }
@@ -106,12 +106,12 @@ impl GCodeDriver {
                             _moveable.move_to_relative_pos(_pos.get_x(), _pos.get_y());
                         },
                         Positioning::Absolute => {
-                            _moveable.move_to_absolute_pos(_pos.get_x(), _pos.get_y());
+                            _moveable.move_to_absolute_pos(&_pos);
                         }
                     }
                 }
                 Command::Home => {
-                    _moveable.move_to_absolute_pos(self.home_position.get_x(), self.home_position.get_y());
+                    _moveable.move_to_absolute_pos(&self.home_position);
                 }
                 Command::SetHome(_move_command) => {
                     self.home_position = Position::from(_move_command);

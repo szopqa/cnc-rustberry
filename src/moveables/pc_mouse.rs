@@ -58,19 +58,19 @@ impl Moveable for PcMouseMoveable {
         );
     }
 
-    fn move_to_relative_pos(&mut self, _x: f32, _y: f32) { 
+    fn move_to_relative_pos(&mut self, _x_path: f32, _y_path: f32) { 
         let _left_btn = MouseButton::Left;
 
         let _dest_pos = Position::evaluate_relative_point(
             &self._current_pos,
-             _x,
-              _y, 
+             _x_path,
+              _y_path, 
               None
         );
         self._move_driver.mouse_down(_left_btn);
 
         path::_line_from_two_positions(self.get_current_pos(), &_dest_pos).iter().for_each(|_p| {
-            self.move_to_absolute_pos(_p.get_x(), _p.get_y());
+            self.move_to_absolute_pos(&_p);
 
             self._current_pos.update_position(
                 _p.get_x(),
@@ -83,12 +83,12 @@ impl Moveable for PcMouseMoveable {
         self._move_driver.mouse_up(_left_btn);
     }
 
-    fn move_to_absolute_pos(&mut self, _x: f32, _y: f32) { 
-        self._move_driver.mouse_move_to(_x as i32, _y as i32);
+    fn move_to_absolute_pos(&mut self, _dest_pos: &Position) { 
+        self._move_driver.mouse_move_to(_dest_pos.get_x() as i32, _dest_pos.get_y() as i32);
 
         self._current_pos.update_position(
-            _x,
-            _y,
+            _dest_pos.get_x(),
+            _dest_pos.get_y(),
             self._current_pos.get_z()
         );
 
