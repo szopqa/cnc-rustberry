@@ -75,7 +75,7 @@ impl <R: BufRead> Parser<R> {
     }
 
     fn parsing_error_for_line(_line_num: i64, _reason: &str) {
-        println!("Skipping line: {}. Reason: {}", _line_num, _reason)
+        println!("[Parser Debug] Skipping line: {}. Reason: {}", _line_num, _reason)
     }
 
     fn is_commented(_line: &str) -> bool {
@@ -106,6 +106,8 @@ impl <R: BufRead> Parser<R> {
                 }
             }
         }
+
+        println!("");
 
         Ok(_gcode_driver)
     }
