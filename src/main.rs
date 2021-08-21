@@ -1,6 +1,8 @@
 use std::error::Error;
 use std::fs::File;
 use std::io::{BufReader};
+use std::{thread, time};
+use std::process::Command;
 
 mod gcode;
 use gcode::parser::Parser;
@@ -31,6 +33,17 @@ fn test_hardware() {
     }
 }
 
+fn open_paint_web_app(url: &str) -> () {
+    println!("Opening google chrome at: {}", url);
+    let mut cmd = Command::new("google-chrome");
+    cmd
+        .arg(format!("https://{}", url))
+        .spawn()
+        .expect(&format!("failed to open chrome at: {}", url));
+
+    thread::sleep(time::Duration::from_millis(4000)); // wait for app to load
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     let _gcode: BufReader<File> = BufReader::new(File::open(String::from("pc_plot.g"))?);
     
@@ -40,6 +53,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut _pc_mouse: Box<dyn Moveable> = Box::new(PcMouseMoveable::new(200.0, 200.0));
     let mut _dummy_moveable: Box<dyn Moveable> = Box::new(DummyMoveable::new(0.0, 0.0));
+
+    open_paint_web_app("jspaint.app/");
 
     _gcode_driver.execute_commands(&mut _pc_mouse)?;
     // _gcode_driver.execute_commands(&mut _dummy_moveable)?;
