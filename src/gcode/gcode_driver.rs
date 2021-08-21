@@ -4,43 +4,20 @@ use crate::moveables::{
 };
 
 use crate::geometry::{
-    position::{Position, ZPosition}
+    position::{Position}
 };
 
-#[derive(Debug, Clone, Copy)]
-pub struct MoveCommandData {
-    pub x_axis: Option<f32>,
-    pub y_axis: Option<f32>,
-    pub z_axis: Option<f32>,
-}
-
-impl Default for MoveCommandData {
-    fn default() -> Self { 
-        Self {
-            x_axis: None,
-            y_axis: None,
-            z_axis: None
-        }
-    }
-}
-
-impl From<&MoveCommandData> for Position {
-    fn from(_command_data: &MoveCommandData) -> Self {
-        Self::new(
-            _command_data.x_axis.unwrap_or(0.0),
-            _command_data.y_axis.unwrap_or(0.0),
-            match _command_data.z_axis {
-                Some(_z_val) => ZPosition::from(_z_val),
-                None => ZPosition::Up // TODO: fix, taking Z position of last move containing Z position value
-            },
-        )
-    }
-}
+use super::moves::{
+    ArcMoveCommandData,
+    MoveCommandData
+};
 
 #[derive(Debug)]
 pub enum Command {
     RapidMove(MoveCommandData),
     LinearMove(MoveCommandData),
+    ClockwiseArc(ArcMoveCommandData),
+    CounterClockwiseArc(ArcMoveCommandData),
     Home,
     SetHome(MoveCommandData),
     SetInches,
@@ -82,8 +59,6 @@ impl Default for GCodeDriver {
 impl GCodeDriver {
     pub fn execute_commands(&mut self, _moveable: &mut Box<dyn Moveable>) -> Result <(), io::Error>{
         for _each_command in &self.commands {
-            println!("Executing: {:?}", _each_command);
-
             match _each_command {
                 Command::RapidMove(_move_command) => {
                     let _pos = Position::from(_move_command);
@@ -109,7 +84,18 @@ impl GCodeDriver {
                             _moveable.move_to_absolute_pos(&_pos);
                         }
                     }
-                }
+                },
+                Command::ClockwiseArc(_arc_move_command) => {
+                    let _arc_start_pos: &Position = _moveable.get_current_pos();
+                    let _arc_dest_position: Position = Position::new(
+                        _arc_move_command.finish_point_x_pos.unwrap(),
+                        _arc_move_command.finish_point_y_pos.unwrap(),
+                        crate::geometry::position::ZPosition::Up
+                    );
+                },
+                Command::CounterClockwiseArc(_arc_move_command) => {
+                    todo!();
+                },
                 Command::Home => {
                     _moveable.move_to_absolute_pos(&self.home_position);
                 }

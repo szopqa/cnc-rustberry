@@ -1,5 +1,14 @@
 use std::io::{BufRead, Lines};
-use super::gcode_driver::*;
+use super::gcode_driver::{
+    Command,
+    GCodeDriver
+};
+
+use super::moves::{
+    IntoMoveData,
+    MoveCommandData,
+    ArcMoveCommandData
+};
 
 pub struct Parser<R: BufRead> {
     gcode_buf: Lines<R>
@@ -19,31 +28,29 @@ impl <R: BufRead> Parser<R> {
         }
     } 
 
-    fn parse_command_data(_command: &str) -> MoveCommandData {
-        let mut _move_command_data: MoveCommandData = MoveCommandData::default();
-
+    fn parse_data<'a, T>(_command: &str) -> T
+    where T: Default  + IntoMoveData<'a> {
+        let mut _arc_move_command_data: T = T::default();
         for _each_param in _command.split_ascii_whitespace() {
-            match &_each_param[..1] {
-                "X" => _move_command_data.x_axis = Self::get_param_value(_each_param),
-                "Y" => _move_command_data.y_axis = Self::get_param_value(_each_param),
-                "Z" => _move_command_data.z_axis = Self::get_param_value(_each_param),
-                _ => ()
-            }
+            _arc_move_command_data.parse_move_data(
+                &_each_param[..1],
+                Self::get_param_value(_each_param)
+            )
         }
 
-        _move_command_data
+        _arc_move_command_data
     }
 
     fn parse_g_command(_command: &str) -> Command {
-        let mut _move_command_data: MoveCommandData = Self::parse_command_data(_command);
-
         match &_command.split_ascii_whitespace().next() {
-            Some("G0") | Some("G00") => Command::RapidMove(_move_command_data),
-            Some("G1") | Some("G01") => Command::LinearMove(_move_command_data),
+            Some("G0") | Some("G00") => Command::RapidMove(Self::parse_data::<MoveCommandData>(_command)),
+            Some("G1") | Some("G01") => Command::LinearMove(Self::parse_data::<MoveCommandData>(_command)),
+            Some("G2") | Some("G02") => Command::ClockwiseArc(Self::parse_data::<ArcMoveCommandData>(_command)),
+            Some("G3") | Some("G03") => Command::CounterClockwiseArc(Self::parse_data::<ArcMoveCommandData>(_command)),
             Some("G20") => Command::SetInches,
             Some("G21") => Command::SetMillimeters,
             Some("G28") => Command::Home,
-            Some("G28.1") => Command::SetHome(_move_command_data),
+            Some("G28.1") => Command::SetHome(Self::parse_data::<MoveCommandData>(_command)),
             Some("G90") => Command::SetAbsolutePositioning,
             Some("G91") => Command::SetRelativePositioning,
             _ => panic!(_command.to_string())
@@ -60,11 +67,11 @@ impl <R: BufRead> Parser<R> {
                 let _last_command: &Command = _gcode_driver.commands.last().unwrap();
                 match _last_command {
                     Command::RapidMove(_) => {
-                        let _command_data = Self::parse_command_data(_line);
+                        let _command_data = Self::parse_data::<MoveCommandData>(_line);
                         return Some(Command::RapidMove(_command_data));
                     },
                     Command::LinearMove(_) => {
-                        let _command_data = Self::parse_command_data(_line);
+                        let _command_data = Self::parse_data::<MoveCommandData>(_line);
                         return Some(Command::LinearMove(_command_data));
                     },
                     _ => unreachable!()

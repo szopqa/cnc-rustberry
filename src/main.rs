@@ -11,15 +11,16 @@ use device::{
 };
 
 mod moveables;
-use moveables::{moveable::Moveable, pc_mouse::PcMouseMoveable};
+use moveables::{moveable::Moveable, pc_mouse::PcMouseMoveable, dummy::DummyMoveable};
 
 mod geometry;
 
-const GPIO_PWM: u8 = 23;
-const X_AXIS_STEPPER_PINS: [u8; 4] = [19, 26, 20, 21];
-const Y_AXIS_STEPPER_PINS: [u8; 4] = [17, 22, 23, 24];
 
 fn test_hardware() {
+    const GPIO_PWM: u8 = 23;
+    const X_AXIS_STEPPER_PINS: [u8; 4] = [19, 26, 20, 21];
+    const Y_AXIS_STEPPER_PINS: [u8; 4] = [17, 22, 23, 24];
+
     // stepper motor initialization
     let mut x_axis_stepper = UlnStepperStepperDriver::new(X_AXIS_STEPPER_PINS);
     let mut y_axis_stepper = UlnStepperStepperDriver::new(Y_AXIS_STEPPER_PINS);
@@ -35,22 +36,20 @@ fn main() -> Result<(), Box<dyn Error>> {
     
     let mut parser = Parser::new(_gcode);
 
-    let mut _gcode_driver = parser.parse()?;
+    let mut _gcode_driver = parser.parse()?; println!("");
 
     let mut _pc_mouse: Box<dyn Moveable> = Box::new(PcMouseMoveable::new(200.0, 200.0));
+    let mut _dummy_moveable: Box<dyn Moveable> = Box::new(DummyMoveable::new(0.0, 0.0));
 
     _gcode_driver.execute_commands(&mut _pc_mouse)?;
+    // _gcode_driver.execute_commands(&mut _dummy_moveable)?;
+
 
     /*
         Currently supported only on raspberry
-    */
-    // test_hardware();
 
-
-    /* 
-        Supported only outside raspberry
+        test_hardware();
     */
-    // draw_using_pc_mouse();
 
     Ok(())
 }
