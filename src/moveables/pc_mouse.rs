@@ -78,7 +78,7 @@ impl Moveable for PcMouseMoveable {
                 self._current_pos.get_z()
             );
 
-            thread::sleep(time::Duration::from_millis(2));
+            thread::sleep(time::Duration::from_millis(3));
         });
         self._move_driver.mouse_up(_left_btn);
     }
@@ -92,7 +92,7 @@ impl Moveable for PcMouseMoveable {
             self._current_pos.get_z()
         );
 
-        thread::sleep(time::Duration::from_millis(2));
+        thread::sleep(time::Duration::from_millis(3));
     }
 
     fn get_current_pos(&self) -> &Position {
@@ -115,6 +115,14 @@ impl Moveable for PcMouseMoveable {
             _ => (_dest_pos.get_x()-_arc_start_pos.get_x()).abs() as i32 / 2
             
         };
+
+        println!(
+            "Drawing circle starting at {:?}, finishing at {:?}, with center point {:?} and radius {:?}",
+            _arc_start_pos,
+            _dest_pos,
+            _center_position,
+            _radius
+        );
 
         self._move_driver.mouse_down(_left_btn);
 

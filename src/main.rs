@@ -52,11 +52,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut _gcode_driver = parser.parse()?; println!("");
 
     let mut _pc_mouse: Box<dyn Moveable> = Box::new(PcMouseMoveable::new(200.0, 200.0));
-    let mut _dummy_moveable: Box<dyn Moveable> = Box::new(DummyMoveable::new(0.0, 0.0));
-
-    // open_paint_web_app("jspaint.app/");
-
+    open_paint_web_app("jspaint.app/");
     _gcode_driver.execute_commands(&mut _pc_mouse)?;
+
+    // let mut _dummy_moveable: Box<dyn Moveable> = Box::new(DummyMoveable::new(0.0, 0.0));
     // _gcode_driver.execute_commands(&mut _dummy_moveable)?;
 
 
