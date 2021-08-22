@@ -1,5 +1,5 @@
 ; setting home position
-G28.1 X400 Y400 Z1
+G28.1 X100 Y600 Z1
 ; move to home position
 G28
 ; set relative positioning
@@ -19,8 +19,8 @@ X0 Y100 Z1
 ; set absolute positioning
 G90
 
-; move to position 600/400
-G0 X600 Y400 Z0
+; move to position 300/600
+G0 X300 Y600 Z0
 
 ; set relative positioning
 G91
@@ -39,11 +39,9 @@ X0 Y100 Z1
 ; set absolute positioning
 G90
 
-; move to position 400/700
-G0 X400 Y700 Z0
+; move to position 200/300
+G0 X200 Y300 Z1
 
-; set relative positioning
-G91
-G0 Z1
-
-G02 X420 Y720 I0 J-20
+; draw circle
+G02
+X300 Y400 I-100 J-100

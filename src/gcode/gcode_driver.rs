@@ -3,6 +3,8 @@ use crate::moveables::{
     moveable::{Moveable}
 };
 
+use crate::gcode::moves::MoveCommand;
+
 use crate::geometry::{
     position::{Position}
 };
@@ -86,12 +88,16 @@ impl GCodeDriver {
                     }
                 },
                 Command::ClockwiseArc(_arc_move_command) => {
-                    let _arc_start_pos: &Position = _moveable.get_current_pos();
-                    let _arc_dest_position: Position = Position::new(
-                        _arc_move_command.finish_point_x_pos.unwrap(),
-                        _arc_move_command.finish_point_y_pos.unwrap(),
-                        crate::geometry::position::ZPosition::Up
-                    );
+                    if _arc_move_command.contains_move_data() {
+
+                        let _arc_dest_position: Position = Position::new(
+                            _arc_move_command.finish_point_x_pos.unwrap(),
+                            _arc_move_command.finish_point_y_pos.unwrap(),
+                            crate::geometry::position::ZPosition::Up
+                        );
+
+                        _moveable.move_clockwise(&_arc_dest_position, _arc_move_command.radius);
+                    }
                 },
                 Command::CounterClockwiseArc(_arc_move_command) => {
                     todo!();

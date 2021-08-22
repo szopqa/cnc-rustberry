@@ -6,6 +6,10 @@ pub trait IntoMoveData<'a> {
     fn parse_move_data(&mut self, _command_symbol: &str, _command_value: Option<f32>);
 }
 
+pub trait MoveCommand<'a> {
+    fn contains_move_data(&self) -> bool;
+}
+
 #[derive(Debug, Clone, Copy)]
 pub struct MoveCommandData {
     pub x_axis: Option<f32>,
@@ -20,6 +24,14 @@ impl Default for MoveCommandData {
             y_axis: None,
             z_axis: None
         }
+    }
+}
+
+impl MoveCommand<'_> for MoveCommandData {
+    fn contains_move_data(&self) -> bool {
+        self.x_axis.is_some() ||
+            self.y_axis.is_some() || 
+                self.z_axis.is_some()
     }
 }
 
@@ -65,6 +77,16 @@ impl Default for ArcMoveCommandData {
             finish_point_y_pos: None,
             radius: None,
         }
+    }
+}
+
+impl MoveCommand<'_> for ArcMoveCommandData {
+    fn contains_move_data(&self) -> bool {
+        self.x_offset.is_some() || 
+            self.y_offset.is_some() || 
+                self.finish_point_x_pos.is_some() || 
+                    self.finish_point_y_pos.is_some() || 
+                        self.radius.is_some()
     }
 }
 

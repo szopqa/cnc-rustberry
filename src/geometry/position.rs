@@ -14,6 +14,7 @@ impl From <f32> for ZPosition {
     }
 }
 
+#[derive(Debug)]
 pub struct Position {
    _x: f32,
    _y: f32,

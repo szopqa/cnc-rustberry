@@ -14,7 +14,7 @@ pub struct DummyMoveable{
     pub _current_pos: Position,
 }
 
-impl  DummyMoveable {
+impl DummyMoveable {
     pub fn new(_x: f32, _y: f32) -> Self {
         println!("Initializing dummy moveable module");
 
@@ -94,7 +94,26 @@ impl Moveable for  DummyMoveable {
         &self._current_pos
     }
 
-    fn move_clockwise(&mut self, _start_pos: &Position, _finish_pos: &Position, _radius: i32) {
-        todo!()
+    fn move_clockwise(&mut self, _dest_pos: &Position, _radius: Option<f32>) {
+        let _arc_start_pos: &Position = self.get_current_pos();
+
+        let _center_position: Position = Position::new(
+            (_dest_pos.get_x() + _arc_start_pos.get_x()) / 2 as f32,
+            (_dest_pos.get_y() + _arc_start_pos.get_y()) / 2 as f32,
+            crate::geometry::position::ZPosition::Up
+        );
+
+        let _radius: i32 = match _radius {
+            Some(_r) => _r as i32,
+            _ => (_dest_pos.get_x()-_arc_start_pos.get_x()).abs() as i32 / 2
+            
+        };
+        println!("Starting circle with center pos {:?} and radius {:?}", _center_position, _radius);
+
+        path::_circle_with_center_and_radius(&_center_position, _radius).iter().for_each(|_p| {
+            println!("p: {:?}", _p);
+
+            thread::sleep(time::Duration::from_millis(2));
+        });
     }
 }

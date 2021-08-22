@@ -100,7 +100,35 @@ impl Moveable for PcMouseMoveable {
         &self._current_pos
     }
 
-    fn move_clockwise(&mut self, _start_pos: &Position, _finish_pos: &Position, _radius: i32) {
-        todo!()
+    fn move_clockwise(&mut self, _dest_pos: &Position, _radius: Option<f32>) {
+        let _arc_start_pos: &Position = self.get_current_pos();
+        let _left_btn = MouseButton::Left;
+
+        let _center_position: Position = Position::new(
+            (_dest_pos.get_x() + _arc_start_pos.get_x()) / 2 as f32,
+            (_dest_pos.get_y() + _arc_start_pos.get_y()) / 2 as f32,
+            crate::geometry::position::ZPosition::Up
+        );
+
+        let _radius: i32 = match _radius {
+            Some(_r) => _r as i32,
+            _ => (_dest_pos.get_x()-_arc_start_pos.get_x()).abs() as i32 / 2
+            
+        };
+
+        self._move_driver.mouse_down(_left_btn);
+
+        path::_circle_with_center_and_radius(&_center_position, _radius).iter().for_each(|_p| {
+            self.move_to_absolute_pos(&_p);
+
+            self._current_pos.update_position(
+                _p.get_x(),
+                _p.get_y(),
+                self._current_pos.get_z()
+            );
+
+            thread::sleep(time::Duration::from_millis(3));
+        });
+        self._move_driver.mouse_up(_left_btn);
     }
 }
